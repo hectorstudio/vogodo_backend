@@ -1,0 +1,100 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Bettercomp API"
+basePath: "/api"
+schemes:
+  - http
+  - https
+paths:
+  /tag:
+    post:
+      summary: "Add tag into the current user's company"
+      operationId: "addTag"
+      parameters:
+      - in: "body"
+        name: "name"
+        description: "Name of the tag"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Tag"
+        "400":
+          description: "Validation error"
+          schema:
+            $ref: "#/definitions/ValidationError"
+        "401":
+          description: "Unauthorized"
+      security:
+        - Bearer: []
+    get:
+      summary: "Returns the list of tags for user's company"
+      opertaionId: "getTagList"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Tag"
+        "401":
+          description: "Unauthorized"
+      security:
+        - Bearer: []
+  /composite/tag:
+    post:
+      summary: "Assign tags to a priced/unpriced row"
+      operationId: "assignCompositeTags"
+      parameters:
+        - in: "body"
+          name: "body"
+          schema:
+            type: "object"
+            properties:
+              isPriced:
+                type: "boolean"
+              rowUniqueIdentifier:
+                type: "string"
+              tags:
+                type: "array"
+                items:
+                  type: "string"
+      responses:
+        "200":
+          description: "Success"
+        "400":
+          description: "Validation error"
+          schema:
+            $ref: "#/definitions/ValidationError"
+        "401":
+          description: "Unauthorized"
+      security:
+        - Bearer: []
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+definitions:
+  Tag:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      companyId:
+        type: "integer"
+  ValidationError:
+    type: "object"
+    properties:
+      errors:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            field:
+              type: "string"

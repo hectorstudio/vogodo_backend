@@ -16,6 +16,9 @@ User.init({
   description: {
     type: Sequelize.STRING,
   },
+  resources: {
+    type: Sequelize.STRING,
+  },
   address: {
     type: Sequelize.STRING,
   },

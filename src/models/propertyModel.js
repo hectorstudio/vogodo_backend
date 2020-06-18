@@ -62,6 +62,7 @@ const propertySql = {
         title,
         details,
         description,
+        resources,
         address,
         latitude,
         longitude,
@@ -74,6 +75,7 @@ const propertySql = {
         ${mysql.escape(Property.title)},
         ${mysql.escape(Property.details)},
         ${mysql.escape(Property.description)},
+        ${mysql.escape(Property.resources || '')},
         ${mysql.escape(Property.address || '')},
         ${mysql.escape(Property.latitude || 0)},
         ${mysql.escape(Property.longitude || 0)},
@@ -82,15 +84,13 @@ const propertySql = {
         ${mysql.escape(Property.alter_phone || '')}
       )`;
 
-      console.log(sql);
-
       return new Promise((resolve, reject) => {
         poolBc.getConnection((err, connection) => {
           if (err) return reject(err);
-          connection.query(sql, (err) => {
+          connection.query(sql, (err, result) => {
             connection.release();
             if (err) return reject(err);
-            return resolve(true);
+            return resolve(result);
           });
         });
       });
@@ -106,14 +106,15 @@ const propertySql = {
         \`title\` = ${mysql.escape(Property.title)},
         \`details\` = ${mysql.escape(Property.details)},
         \`description\` = ${mysql.escape(Property.description)},
+        \`resources\` = ${mysql.escape(Property.resources || '')},
         \`address\` = ${mysql.escape(Property.address || '')},
         \`latitude\` = ${mysql.escape(Property.latitude || 0)},
         \`longitude\` = ${mysql.escape(Property.longitude || 0)},
         \`alter_name\` = ${mysql.escape(Property.alter_name || '')},
-        \`alter_email\` = ${mysql.escape(alter_email.title || '')},
-        \`alter_phone\` = ${mysql.escape(Property.alter_phone || '')},
-        \`membership\` = ${mysql.escape(Property.membership || 0)}
+        \`alter_email\` = ${mysql.escape(Property.alter_email || '')},
+        \`alter_phone\` = ${mysql.escape(Property.alter_phone || '')}
        ${where}`;
+       console.log(sql);
       return new Promise((resolve, reject) => {
         poolBc.getConnection((err, connection) => {
           if (err) return reject(err);
@@ -176,8 +177,8 @@ const propertyModel = {
   addNewProperty: async (property) => {
     try {
       property.details = JSON.stringify(property.details);
-      await propertySql.insertProperty(property);
-      return true;
+      const result = await propertySql.insertProperty(property);
+      return result;
     } catch (e) {
       console.log('Add New Property Error:', e);
       return false;

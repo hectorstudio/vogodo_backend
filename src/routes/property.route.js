@@ -6,15 +6,15 @@ const {
   Property
 } = require('../validations/Property.validation');
 
+const upload = require('../config/upload');
+
 const router = express.Router();
 
 router
   .route('/')
   .get(controller.getProperties);
 
-router
-  .route('/')
-  .post(authorize(), validate(Property), controller.addNewProperty);
+router.post('/', upload.single('file'), authorize(), controller.addNewProperty);
 
 router
   .route('/own')

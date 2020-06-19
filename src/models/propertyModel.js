@@ -151,7 +151,7 @@ const propertyModel = {
       if (result.length === 0) {
         return null;
       } else {
-        return result[0];
+        return result;
       }
     } catch (e) {
       console.log('get Properties By Owner Id Error:', e);
@@ -163,7 +163,7 @@ const propertyModel = {
     try {
       const result = await propertySql.getProperties();
       if (result.length === 0) {
-        return null;
+        return {msg: 'No properties'};
       } else {
         return result;
       }

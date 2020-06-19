@@ -28,8 +28,9 @@ exports.getProperty = async (req, res) => {
 exports.getProperties = async (req, res) => {
   let Properties = await PropertyModel.getProperties();
   if (Properties) {
-    Properties.forEach((element) => {
+    Properties.forEach(element => {
       element.details = JSON.parse(element.details);
+      element.resources = JSON.parse(element.resources);
     });
     return res.json({ Properties });
   } else {
@@ -87,7 +88,6 @@ exports.addNewProperty = async (req, res) => {
   filesBucket.upload(pathString, options)
     .then((fileResponse) => {
       const { mediaLink } = fileResponse[1];
-      console.log(mediaLink);
       let resources = [];
       resources.push(mediaLink);
       PropertyModel.updateProperty(result.insertId, {...Property, resources: JSON.stringify(resources)}).then((data) => {

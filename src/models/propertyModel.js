@@ -40,7 +40,7 @@ const propertySql = {
   },
 
   getProperties: () => {
-    const sql = `SELECT * FROM properties`;
+    const sql = `SELECT * FROM properties WHERE pending = 1`;
 
     return new Promise((resolve, reject) => {
       poolBc.getConnection((err, connection) => {
@@ -110,6 +110,7 @@ const propertySql = {
         \`address\` = ${mysql.escape(Property.address || '')},
         \`latitude\` = ${mysql.escape(Property.latitude || 0)},
         \`longitude\` = ${mysql.escape(Property.longitude || 0)},
+        \`pending\` = 1,
         \`alter_name\` = ${mysql.escape(Property.alter_name || '')},
         \`alter_email\` = ${mysql.escape(Property.alter_email || '')},
         \`alter_phone\` = ${mysql.escape(Property.alter_phone || '')}
@@ -125,7 +126,96 @@ const propertySql = {
           });
         });
       });
-  }
+  },
+
+  getFavorites: (uid) => {
+    const sql = `SELECT * FROM favorite WHERE owner_id = ${mysql.escape(uid)}`;
+    return new Promise((resolve, reject) => {
+      poolBc.getConnection((err, connection) => {
+        if (err) return reject(err);
+        connection.query(sql, (err, result) => {
+          connection.release();
+          if (err) return reject(err);
+          return resolve(result);
+        });
+      });
+    });
+  },
+
+  getFavoritesByOwnerId: (owner_id) => {
+    const sql = `SELECT p.* FROM \`properties\` p LEFT JOIN \`favorite\` f ON p.id = f.property_id WHERE f.owner_id = ${owner_id} and f.favorite = 1`;
+
+    return new Promise((resolve, reject) => {
+      poolBc.getConnection((err, connection) => {
+        if (err) return reject(err);
+        connection.query(sql, (err, result) => {
+          connection.release();
+          if (err) return reject(err);
+          return resolve(result);
+        });
+      });
+    });
+  },
+
+  getFavorite: (item) => {
+    const sql = `
+      SELECT * FROM favorite WHERE property_id = ${mysql.escape(item.pid)} and owner_id = ${mysql.escape(item.uid)}
+    `;
+
+    return new Promise((resolve, reject) => {
+      poolBc.getConnection((err, connection) => {
+        if (err) return reject(err);
+        connection.query(sql, (err, result) => {
+          connection.release();
+          if (err) return reject(err);
+          return resolve(result);
+        });
+      });
+    });
+  }, 
+
+  insertIntoFavorite: (item) => {
+    const sql =
+      `INSERT INTO favorite (
+        owner_id,
+        property_id 
+      ) 
+      VALUES (
+        ${mysql.escape(item.uid)},
+        ${mysql.escape(item.pid)}
+      )`;
+      return new Promise((resolve, reject) => {
+        poolBc.getConnection((err, connection) => {
+          if (err) return reject(err);
+          connection.query(sql, (err, result) => {
+            connection.release();
+            if (err) return reject(err);
+            return resolve(result);
+          });
+        });
+      });
+  },
+
+  updateFavorite: (id, item) => {
+    const where = `WHERE \`id\`=${mysql.escape(id)}`;
+    const sql =
+      `UPDATE favorite
+      SET 
+        \`owner_id\` = ${mysql.escape(item.uid)},
+        \`property_id\` = ${mysql.escape(item.pid)},
+        \`favorite\` = ${mysql.escape(item.favorite)}
+       ${where}`;
+      return new Promise((resolve, reject) => {
+        poolBc.getConnection((err, connection) => {
+          if (err) return reject(err);
+          connection.query(sql, (err) => {
+            connection.release();
+            if (err) return reject(err);
+            return resolve(true);
+          });
+        });
+      });
+  },
 
 };
 
@@ -194,6 +284,56 @@ const propertyModel = {
       console.log('Update Property Error:', e);
       return false;
     }
+  },
+
+  getFavorite: async (item) => {
+    try {
+      const result = await propertySql.getFavorite(item);
+      return result;
+    } catch (e) {
+      console.log('get Favorite Error:', e);
+      return false;
+    }    
+  },
+
+  getFavorites: async (uid) => {
+    try {
+      const result = await propertySql.getFavorites(uid);
+      return result;
+    } catch (e) {
+      console.log('get Favorites Error:', e);
+      return false;
+    }    
+  },
+
+  getFavoritesByOwnerId: async (uid) => {
+    try {
+      const result = await propertySql.getFavoritesByOwnerId(uid);
+      return result;
+    } catch (e) {
+      console.log('get Saved Favorites Error:', e);
+      return false;
+    }    
+  },
+
+  insertIntoFavorite: async (item) => {
+    try {
+      const result = await propertySql.insertIntoFavorite(item);
+      return result;
+    } catch (e) {
+      console.log('add Favorite Error:', e);
+      return false;
+    }    
+  },
+
+  updateFavorite: async (id, item) => {
+    try {
+      const result = await propertySql.updateFavorite(id, item);
+      return result;
+    } catch (e) {
+      console.log('update Favorite Error:', e);
+      return false;
+    }    
   },
 };
 

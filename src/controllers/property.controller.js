@@ -56,14 +56,14 @@ exports.getPropertiesByOwnerId = async (req, res) => {
 }
 
 /**
- * Update Property
+ * Add a new Property
  * @public
  */
-exports.updateProperty = async (req, res) => {
+exports.addNewProperty = async (req, res) => {
   const Property = req.body;
-  const result = await PropertyModel.updateProperty(req.params.id, Property);
+  const result = await PropertyModel.addNewProperty(Property);
   if (result) {
-    return true;
+    return res.status(200).json({ result: result });
   } else {
     return res
       .status(httpStatus.INTERNAL_SERVER_ERROR)
@@ -72,33 +72,86 @@ exports.updateProperty = async (req, res) => {
 };
 
 /**
- * Add a new Property
+ * Update Property
  */
-exports.addNewProperty = async (req, res) => {
+exports.updateProperty = async (req, res) => {
   const Property = JSON.parse(req.body.info);
-  const result = await PropertyModel.addNewProperty(Property);
   const { file } = req;
   const extension = file.originalname.split('.').reverse()[0];
   const options = {
-    destination: STORAGE_PATHS.propertyCover(result.insertId, `${file.filename}.${extension}`),
+    destination: STORAGE_PATHS.propertyCover(req.params.id, `${file.filename}.${extension}`),
     public: true,
   }
   const pathString = file.path;
-  console.log(typeof(pathString));
   filesBucket.upload(pathString, options)
     .then((fileResponse) => {
       const { mediaLink } = fileResponse[1];
       let resources = [];
       resources.push(mediaLink);
-      PropertyModel.updateProperty(result.insertId, {...Property, resources: JSON.stringify(resources)}).then((data) => {
+      PropertyModel.updateProperty(req.params.id, {...Property, resources: JSON.stringify(resources)}).then((data) => {
         // const response = buildingSchema.toJs(data.rows[0]);
 
         return res.status(200).json({ result: "Successfully Added" });
       });
     })
     .catch((err) => {
-      console.log(err);
       return res.status(httpStatus.INTERNAL_SERVER_ERROR)
       .json({ error: "Internal Server Error" });
     });
 };
+
+/**
+ * get favorites
+ * @public
+ */
+exports.getFavorites = async (req, res) => {
+  const result = await PropertyModel.getFavorites(req.params.uid);
+  if (result) {
+    return res.status(200).json({ result });
+  } else {
+    return res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+}
+
+/**
+ * get favorites by owner_id
+ * @public
+ */
+exports.getFavoritesByOwnerId = async (req, res) => {
+  const Properties = await PropertyModel.getFavoritesByOwnerId(req.params.uid);
+  if (Properties) {
+    Properties.forEach(element => {
+      element.details = JSON.parse(element.details);
+      element.resources = JSON.parse(element.resources);
+    });
+    return res.status(200).json({ Properties });
+  } else {
+    return res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+}
+
+/**
+ * Save as favorite
+ * @public
+ */
+exports.saveAsFavorite = async (req, res) => {
+  const item = req.body;
+  let result = await PropertyModel.getFavorite(item);
+  if (result.length < 1) {
+    result = await PropertyModel.insertIntoFavorite(item)
+  } else {
+    result = await PropertyModel.updateFavorite(result[0].id, item);
+  }
+  console.log(result);
+  if (result) {
+    return res.status(200).json({ result });
+  } else {
+    return res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+}

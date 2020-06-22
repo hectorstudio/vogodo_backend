@@ -14,8 +14,6 @@ router
   .route('/')
   .get(controller.getProperties);
 
-router.post('/', upload.single('file'), authorize(), controller.addNewProperty);
-
 router
   .route('/own')
   .get(authorize(), controller.getPropertiesByOwnerId);
@@ -25,7 +23,9 @@ router
   .get(authorize(), controller.getProperty);
 
 router
-  .route('/:id')
-  .put(authorize(), validate(Property), controller.updateProperty);
+  .route('/')
+  .post(authorize(), validate(Property), controller.addNewProperty);
+
+router.post('/:id', upload.single('file'), authorize(), controller.updateProperty);
 
 module.exports = router;

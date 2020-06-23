@@ -47,6 +47,10 @@ exports.getProperties = async (req, res) => {
 exports.getPropertiesByOwnerId = async (req, res) => {
   let Properties = await PropertyModel.getPropertiesByOwnerId(req.user.id);
   if (Properties) {
+    Properties.forEach(element => {
+      element.details = JSON.parse(element.details);
+      element.resources = JSON.parse(element.resources);
+    });
     return res.json({ Properties });
   } else {
     return res
@@ -74,27 +78,37 @@ exports.addNewProperty = async (req, res) => {
 /**
  * Update Property
  */
+
+const fileUploading = async (id, files) => {
+  const filePromises = files.map(async (file) => {
+    const extension = file.originalname.split('.').reverse()[0];
+    const options = {
+      destination: STORAGE_PATHS.propertyCover(id, `${file.filename}.${extension}`),
+      public: true,
+    }
+    const pathString = file.path;
+    try {
+      fileResponse = await filesBucket.upload(pathString, options);
+      const { mediaLink } = fileResponse[1];
+      return mediaLink;
+    } catch (error) {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR)
+        .json({ error: "Internal Server Error" });
+    }
+  });
+  const resources = await Promise.all(filePromises);
+  return resources;
+}
+
 exports.updateProperty = async (req, res) => {
   const Property = JSON.parse(req.body.info);
-  const { file } = req;
-  const extension = file.originalname.split('.').reverse()[0];
-  const options = {
-    destination: STORAGE_PATHS.propertyCover(req.params.id, `${file.filename}.${extension}`),
-    public: true,
-  }
-  const pathString = file.path;
-  filesBucket.upload(pathString, options)
-    .then((fileResponse) => {
-      const { mediaLink } = fileResponse[1];
-      let resources = [];
-      resources.push(mediaLink);
-      PropertyModel.updateProperty(req.params.id, {...Property, resources: JSON.stringify(resources)}).then((data) => {
-        // const response = buildingSchema.toJs(data.rows[0]);
-
-        return res.status(200).json({ result: "Successfully Added" });
-      });
+  const { files } = req;
+  const resources = await fileUploading(req.params.id, files);
+  PropertyModel.updateProperty(req.params.id, {...Property, resources: JSON.stringify(resources)})
+    .then((data) => {
+      return res.status(200).json({ result: "Successfully Added" });
     })
-    .catch((err) => {
+    .catch((err)=> {
       return res.status(httpStatus.INTERNAL_SERVER_ERROR)
       .json({ error: "Internal Server Error" });
     });

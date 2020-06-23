@@ -26,6 +26,6 @@ router
   .route('/')
   .post(authorize(), validate(Property), controller.addNewProperty);
 
-router.post('/:id', upload.single('file'), authorize(), controller.updateProperty);
+router.post('/:id', upload.any('files[]'), authorize(), controller.updateProperty);
 
 module.exports = router;

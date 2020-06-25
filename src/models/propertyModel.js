@@ -39,8 +39,16 @@ const propertySql = {
     });
   },
 
-  getProperties: () => {
-    const sql = `SELECT * FROM properties WHERE pending = 1`;
+  getProperties: (params) => {
+    let where = ' WHERE pending = 1';
+    if (params) {
+      if (params.search) {
+        const addrArray = params.search.split(', ');
+        where += ` AND address LIKE '%${addrArray[0]}, ${addrArray[1]}%'`;
+      }
+    }
+    const sql = `SELECT * FROM properties${where}`;
+    console.log(sql);
 
     return new Promise((resolve, reject) => {
       poolBc.getConnection((err, connection) => {
@@ -115,7 +123,7 @@ const propertySql = {
         \`alter_email\` = ${mysql.escape(Property.alter_email || '')},
         \`alter_phone\` = ${mysql.escape(Property.alter_phone || '')}
        ${where}`;
-       console.log(sql);
+       
       return new Promise((resolve, reject) => {
         poolBc.getConnection((err, connection) => {
           if (err) return reject(err);
@@ -264,9 +272,9 @@ const propertyModel = {
     }
   },
 
-  getProperties: async () => {
+  getProperties: async (params) => {
     try {
-      const result = await propertySql.getProperties();
+      const result = await propertySql.getProperties(params);
       if (result.length === 0) {
         return {msg: 'No properties'};
       } else {

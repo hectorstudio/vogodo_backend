@@ -103,7 +103,8 @@ const fileUploading = async (id, files) => {
 exports.updateProperty = async (req, res) => {
   const Property = JSON.parse(req.body.info);
   const { files } = req;
-  const resources = await fileUploading(req.params.id, files);
+  const newResources = await fileUploading(req.params.id, files);
+  const resources = Property.resources === '' ? newResources : JSON.parse(Property.resources).concat(newResources);
   PropertyModel.updateProperty(req.params.id, {...Property, resources: JSON.stringify(resources)})
     .then((data) => {
       return res.status(200).json({ result: "Successfully Added" });
@@ -113,6 +114,17 @@ exports.updateProperty = async (req, res) => {
       .json({ error: "Internal Server Error" });
     });
 };
+
+exports.deleteProperty = async (req, res) => {
+  PropertyModel.deleteProperty(req.params.id)
+    .then((data) => {
+      return res.status(200).json({ result: "Successfully deleted" });
+    })
+    .catch((err)=> {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+    });
+}
 
 /**
  * get favorites

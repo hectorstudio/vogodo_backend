@@ -128,6 +128,21 @@ const propertySql = {
       });
   },
 
+  deleteProperty: (id) => {
+    const sql = `DELETE FROM properties WHERE id = ${id}`;
+
+    return new Promise((resolve, reject) => {
+      poolBc.getConnection((err, connection) => {
+        if (err) return reject(err);
+        connection.query(sql, (err, result) => {
+          connection.release();
+          if (err) return reject(err);
+          return resolve(result);
+        });
+      });
+    });
+  },
+
   getFavorites: (uid) => {
     const sql = `SELECT * FROM favorite WHERE owner_id = ${mysql.escape(uid)}`;
     return new Promise((resolve, reject) => {
@@ -279,6 +294,16 @@ const propertyModel = {
     try {
       property.details = JSON.stringify(property.details);
       await propertySql.updateProperty(id, property);
+      return true;
+    } catch (e) {
+      console.log('Update Property Error:', e);
+      return false;
+    }
+  },
+  
+  deleteProperty: async (id) => {
+    try {
+      await propertySql.deleteProperty(id);
       return true;
     } catch (e) {
       console.log('Update Property Error:', e);

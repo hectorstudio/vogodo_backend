@@ -23,6 +23,9 @@ router
   .get(authorize(), controller.getProperty);
 
 router
+  .route('/:id')
+  .delete(authorize(), controller.deleteProperty);
+router
   .route('/')
   .post(authorize(), validate(Property), controller.addNewProperty);
 

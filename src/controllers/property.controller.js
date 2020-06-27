@@ -28,7 +28,7 @@ exports.getProperty = async (req, res) => {
 exports.getProperties = async (req, res) => {
   const params = req.query.params ? JSON.parse(req.query.params) : {};
   let Properties = await PropertyModel.getProperties(params);
-  if (Properties) {
+  if (Properties && Properties.length > 0) {
     Properties.forEach(element => {
       element.details = JSON.parse(element.details);
       element.resources = JSON.parse(element.resources);

@@ -41,10 +41,23 @@ const propertySql = {
 
   getProperties: (params) => {
     let where = ' WHERE pending = 1';
+    console.log(params);
     if (params) {
       if (params.search) {
         const addrArray = params.search.split(', ');
         where += ` AND address LIKE '%${addrArray[0]}, ${addrArray[1]}%'`;
+      }
+      if (params.min) {
+        where += ` AND price > ${params.min}`;
+      }
+      if (params.max) {
+        where += ` AND price < ${params.max}`;
+      }
+      if (params.built) {
+        where += ` AND built > ${params.built}`
+      }
+      if (params.type) {
+        where += ` AND type = '${params.type}'`
       }
     }
     const sql = `SELECT * FROM properties${where}`;
@@ -69,6 +82,9 @@ const propertySql = {
         owner_id,
         title,
         details,
+        type,
+        price,
+        built,
         description,
         resources,
         address,
@@ -82,6 +98,9 @@ const propertySql = {
         ${mysql.escape(Property.owner_id)},
         ${mysql.escape(Property.title)},
         ${mysql.escape(Property.details)},
+        ${mysql.escape(Property.type)},
+        ${mysql.escape(Property.price || 0)},
+        ${mysql.escape(Property.built || 0)},
         ${mysql.escape(Property.description)},
         ${mysql.escape(Property.resources || '')},
         ${mysql.escape(Property.address || '')},
@@ -113,6 +132,8 @@ const propertySql = {
         \`owner_id\` = ${mysql.escape(Property.owner_id)},
         \`title\` = ${mysql.escape(Property.title)},
         \`details\` = ${mysql.escape(Property.details)},
+        \`price\` = ${mysql.escape(Property.price)},
+        \`built\` = ${mysql.escape(Property.built)},
         \`description\` = ${mysql.escape(Property.description)},
         \`resources\` = ${mysql.escape(Property.resources || '')},
         \`address\` = ${mysql.escape(Property.address || '')},

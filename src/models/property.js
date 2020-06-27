@@ -13,6 +13,12 @@ User.init({
   details: {
     type: Sequelize.STRING,
   },
+  price: {
+    type: Sequelize.INTEGER,
+  },
+  built: {
+    type: Sequelize.INTEGER,
+  },
   description: {
     type: Sequelize.STRING,
   },

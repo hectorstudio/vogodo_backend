@@ -41,7 +41,6 @@ const propertySql = {
 
   getProperties: (params) => {
     let where = ' WHERE pending = 1';
-    console.log(params);
     if (params) {
       if (params.search) {
         const addrArray = params.search.split(', ');
@@ -61,7 +60,6 @@ const propertySql = {
       }
     }
     const sql = `SELECT * FROM properties${where}`;
-    console.log(sql);
 
     return new Promise((resolve, reject) => {
       poolBc.getConnection((err, connection) => {
@@ -87,6 +85,7 @@ const propertySql = {
         built,
         description,
         resources,
+        thumbnails,
         address,
         latitude,
         longitude,
@@ -103,6 +102,7 @@ const propertySql = {
         ${mysql.escape(Property.built || 0)},
         ${mysql.escape(Property.description)},
         ${mysql.escape(Property.resources || '')},
+        ${mysql.escape(Property.thumbnails || '')},
         ${mysql.escape(Property.address || '')},
         ${mysql.escape(Property.latitude || 0)},
         ${mysql.escape(Property.longitude || 0)},
@@ -136,6 +136,7 @@ const propertySql = {
         \`built\` = ${mysql.escape(Property.built)},
         \`description\` = ${mysql.escape(Property.description)},
         \`resources\` = ${mysql.escape(Property.resources || '')},
+        \`thumbnails\` = ${mysql.escape(Property.thumbnails || '')},
         \`address\` = ${mysql.escape(Property.address || '')},
         \`latitude\` = ${mysql.escape(Property.latitude || 0)},
         \`longitude\` = ${mysql.escape(Property.longitude || 0)},
@@ -296,11 +297,7 @@ const propertyModel = {
   getProperties: async (params) => {
     try {
       const result = await propertySql.getProperties(params);
-      if (result.length === 0) {
-        return {msg: 'No properties'};
-      } else {
-        return result;
-      }
+      return result;
     } catch (e) {
       console.log('Get Properties Error:', e);
       return null;

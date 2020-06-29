@@ -25,6 +25,9 @@ User.init({
   resources: {
     type: Sequelize.STRING,
   },
+  thumbnails: {
+    type: Sequelize.STRING,
+  },
   address: {
     type: Sequelize.STRING,
   },

@@ -7,6 +7,7 @@ const FILE_STATUS = {
 
 const STORAGE_PATHS = {
   propertyCover: (propertyId, fileName) => `properties/${propertyId}/covers/${fileName}`,
+  propertyThumb: (propertyId, fileName) => `properties/${propertyId}/thumbnails/${fileName}`,
   file: (propertyId, fileId) => `properties/${propertyId}/files/${fileId}`,
 };
 

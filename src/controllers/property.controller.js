@@ -1,4 +1,4 @@
-const PropertyModel = require("../models/PropertyModel");
+const PropertyModel = require("../models/propertyModel");
 const httpStatus = require("http-status");
 const { STORAGE_PATHS } = require("../constants/files");
 const filesBucket = require("../config/storage");

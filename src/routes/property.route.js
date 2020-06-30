@@ -4,7 +4,7 @@ const controller = require('../controllers/property.controller');
 const { authorize } = require('../middlewares/auth');
 const {
   Property
-} = require('../validations/Property.validation');
+} = require('../validations/property.validation');
 
 const upload = require('../config/upload');
 

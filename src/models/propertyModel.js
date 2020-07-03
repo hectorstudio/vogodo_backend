@@ -39,6 +39,20 @@ const propertySql = {
     });
   },
 
+  getRecentProperties: () => {
+    const sql = 'SELECT * FROM properties ORDER BY id desc LIMIT 4';
+    return new Promise((resolve, reject) => {
+      poolBc.getConnection((err, connection) => {
+        if (err) return reject(err);
+        connection.query(sql, (err, result) => {
+          connection.release();
+          if (err) return reject(err);
+          return resolve(result);
+        });
+      });
+    });
+  },
+
   getProperties: (params) => {
     let where = ' WHERE pending = 1';
     if (params) {
@@ -297,6 +311,16 @@ const propertyModel = {
   getProperties: async (params) => {
     try {
       const result = await propertySql.getProperties(params);
+      return result;
+    } catch (e) {
+      console.log('Get Properties Error:', e);
+      return null;
+    }
+  },
+
+  getRecentProperties: async () => {
+    try {
+      const result = await propertySql.getRecentProperties();
       return result;
     } catch (e) {
       console.log('Get Properties Error:', e);

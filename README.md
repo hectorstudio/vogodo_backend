@@ -6,5 +6,5 @@
 
 ## Install MySQL
 
-- Create database `vogodo`
+- Create database `selldealsnow`
 

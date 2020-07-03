@@ -15,6 +15,10 @@ router
   .get(controller.getProperties);
 
 router
+  .route('/recent')
+  .get(controller.getRecentProperties);
+
+router
   .route('/own')
   .get(authorize(), controller.getPropertiesByOwnerId);
 

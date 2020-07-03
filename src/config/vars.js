@@ -2,8 +2,8 @@ const path = require('path');
 
 // import .env variables
 require('dotenv-safe').load({
-  path: path.join(__dirname, `../../.env.${process.env.NODE_ENV || 'test'}`),
-  sample: path.join(__dirname, '../../.env.example'),
+  path: path.join(__dirname, `../../.env.${process.env.NODE_ENV || 'local'}`),
+  sample: path.join(__dirname, '../../.env.local'),
 });
 
 module.exports = {

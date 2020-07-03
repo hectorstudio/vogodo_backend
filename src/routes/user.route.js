@@ -20,4 +20,8 @@ router
   .route('/login')
   .post(validate(login), controller.login);
 
+router
+  .route('/register')
+  .post(validate(login), controller.addNewUser);
+
 module.exports = router;

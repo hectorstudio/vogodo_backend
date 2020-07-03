@@ -179,8 +179,8 @@ const userModel = {
   // Create a new User
   addNewUser: async (user) => {
     try {
-      user.password = await bcrypt.hash(user.password, 10);
-      await userSql.insertUser(user);
+      password = await bcrypt.hash(user.password, 10);
+      await userSql.insertUser({...user, password});
       return true;
     } catch (e) {
       console.log('Add New User Error:', e);

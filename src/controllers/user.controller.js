@@ -34,12 +34,22 @@ exports.updateUser = async (req, res) => {
   * Add a new User
   */
  exports.addNewUser = async (req, res) => {
-   const user = req.body;
-   const result = await User.addNewUser(user);
-   if (result) {
-     return true;
-   } else {
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
+   const userInfo = req.body;
+   const is_exist = await User.checkDuplicateEmail(userInfo.emailAddress);
+   if (!is_exist) {
+    const res1 = await User.addNewUser(userInfo);
+    if (res1) {
+     const result = await User.findAndGenerateToken(userInfo.emailAddress, userInfo.password);
+     if (result.error) {
+       return res.status(result.error).json({ error: result.msg || '' });
+     }
+     const { user, accessToken } = result;
+ 
+     const token = utils.generateTokenResponse(user, accessToken);
+     return res.json({ token, user });
+    } else {
+       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
+    }
    }
  }
 
@@ -63,3 +73,4 @@ exports.login = async (req, res) => {
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
   }
 };
+

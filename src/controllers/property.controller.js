@@ -21,6 +21,24 @@ exports.getProperty = async (req, res) => {
   }
 };
 
+exports.getRecentProperties = async (req, res) => {
+  let Properties = await PropertyModel.getRecentProperties();
+  if (Properties) {
+    if (Properties.length > 0) {
+      Properties.forEach(element => {
+        element.details = JSON.parse(element.details);
+        element.resources = JSON.parse(element.resources);
+        element.thumbnails = JSON.parse(element.thumbnails);
+      });
+    }
+    return res.json({ Properties });
+  } else {
+    return res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+}
+
 /**
  * Get Properties
  * @public

@@ -42,6 +42,23 @@ const userSql = {
     });
   },
 
+  getUserBySocialID: (socialID, type) => {
+    const where = `\`${type}\`=${mysql.escape(socialID)}`;
+
+    const sql = `SELECT * FROM users WHERE ${where}`;
+
+    return new Promise((resolve, reject) => {
+      poolBc.getConnection((err, connection) => {
+        if (err) return reject(err);
+        connection.query(sql, (err, result) => {
+          connection.release();
+          if (err) return reject(err);
+          return resolve(result);
+        });
+      });
+    });
+  },
+
   getUsers: () => {
     const sql = `SELECT * FROM users`;
 
@@ -103,6 +120,54 @@ const userSql = {
       });
   },
 
+  insertSocialAccount: (user) => {
+    const date = moment().toISOString();
+    const sql =
+      `INSERT INTO users (
+        firstName,
+        lastName,
+        emailAddress,
+        password,
+        address,
+        latitude,
+        longitude,
+        phone,
+        title,
+        description,
+        membership,
+        createdTime,
+        passwordLastChanged,
+        ${user.type}      
+      ) 
+      VALUES (
+        ${mysql.escape(user.firstName)},
+        ${mysql.escape(user.lastName)},
+        ${mysql.escape(user.userID)},
+        ${mysql.escape(user.password)},
+        ${mysql.escape(user.address || '')},
+        ${mysql.escape(user.latitude || 0)},
+        ${mysql.escape(user.longitude || 0)},
+        ${mysql.escape(user.phone || '')},
+        ${mysql.escape(user.title || '')},
+        ${mysql.escape(user.description || '')},
+        ${mysql.escape(user.membership || 0)},
+        ${mysql.escape(date)},
+        ${mysql.escape(date)},
+        ${mysql.escape(user.userID)}
+      )`;
+
+      return new Promise((resolve, reject) => {
+        poolBc.getConnection((err, connection) => {
+          if (err) return reject(err);
+          connection.query(sql, (err) => {
+            connection.release();
+            if (err) return reject(err);
+            return resolve(true);
+          });
+        });
+      });
+  },
+
   updateUser: (id, user) => {
     const date = moment().toISOString();
     const where = `WHERE \`id\`=${mysql.escape(id)}`;
@@ -148,6 +213,16 @@ const userModel = {
     }
   },
 
+  checkDuplicateSocialID: async (socialID, type) => {
+    try {
+      const result = await userSql.getUserBySocialID(socialID, type);
+      return result.length !== 0;
+    } catch (e) {
+      console.log('checkDuplicateSocialAccount Error:', e);
+      return null;
+    }
+  },
+
   getUser: async (id) => {
     try {
       const result = await userSql.getUser(id);
@@ -187,6 +262,16 @@ const userModel = {
       return false;
     }
   },
+
+  addSocialAccount: async (user) => {
+    try {
+      await userSql.insertSocialAccount({...user});
+      return true;
+    } catch (e) {
+      console.log('Add New User Error:', e);
+      return false;
+    }
+  },
   
   updateUser: async (id, user) => {
     try {
@@ -209,7 +294,9 @@ const userModel = {
 
       user = user[0];
 
-      const passwordMatched = await utils.passwordMatches(password, user.password);
+      let passwordMatched = true;
+      if (password !== '' || user.password !== null) 
+        passwordMatched = await utils.passwordMatches(password, user.password);
       if (!passwordMatched) {
         return { error: httpStatus.UNAUTHORIZED, msg: 'Password wrong' };
       }

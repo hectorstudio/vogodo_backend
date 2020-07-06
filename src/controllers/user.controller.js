@@ -52,6 +52,39 @@ exports.updateUser = async (req, res) => {
     }
    }
  }
+ 
+
+ /**
+  * Add a new User
+  */
+ exports.addSocialAccount = async (req, res) => {
+  const userInfo = req.body;
+  const is_exist = await User.checkDuplicateSocialID(userInfo.userID, userInfo.type);
+  if (!is_exist) {
+   const res1 = await User.addSocialAccount({...userInfo, firstName: userInfo.name.split(" ")[0], lastName: userInfo.name.split(" ")[1]});
+   if (res1) {
+    const result = await User.findAndGenerateToken(userInfo.userID, "");
+    if (result.error) {
+      return res.status(result.error).json({ error: result.msg || '' });
+    }
+    const { user, accessToken } = result;
+
+    const token = utils.generateTokenResponse(user, accessToken);
+    return res.json({ token, user });
+   } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
+   }
+  } else {    
+    const result = await User.findAndGenerateToken(userInfo.userID, "");
+    if (result.error) {
+      return res.status(result.error).json({ error: result.msg || '' });
+    }
+    const { user, accessToken } = result;
+
+    const token = utils.generateTokenResponse(user, accessToken);
+    return res.json({ token, user });
+  }
+}
 
 /**
  * Returns jwt token if valid username and password is provided

@@ -24,4 +24,8 @@ router
   .route('/register')
   .post(validate(login), controller.addNewUser);
 
+router
+  .route('/registerWithSocial')
+  .post(controller.addSocialAccount);
+
 module.exports = router;

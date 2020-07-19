@@ -40,7 +40,7 @@ const propertySql = {
   },
 
   getRecentProperties: () => {
-    const sql = 'SELECT * FROM properties ORDER BY id desc LIMIT 4';
+    const sql = 'SELECT * FROM properties WHERE pending = 1 ORDER BY id desc LIMIT 4';
     return new Promise((resolve, reject) => {
       poolBc.getConnection((err, connection) => {
         if (err) return reject(err);

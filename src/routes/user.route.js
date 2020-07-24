@@ -25,6 +25,10 @@ router
   .post(validate(login), controller.addNewUser);
 
 router
+  .route('/proceed/:id')
+  .post(authorize(), controller.proceedPayment);
+
+router
   .route('/registerWithSocial')
   .post(controller.addSocialAccount);
 

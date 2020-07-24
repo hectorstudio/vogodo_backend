@@ -197,6 +197,26 @@ const userSql = {
           });
         });
       });
+  },
+
+  updatePayment: (id, info) => {
+    const where = `WHERE \`id\`=${mysql.escape(id)}`;
+    const sql =
+      `UPDATE users
+      SET 
+        \`membership\` = 1,
+        \`cardInfo\` = ${mysql.escape(info.billing_details)}
+       ${where}`;
+      return new Promise((resolve, reject) => {
+        poolBc.getConnection((err, connection) => {
+          if (err) return reject(err);
+          connection.query(sql, (err) => {
+            connection.release();
+            if (err) return reject(err);
+            return resolve(true);
+          });
+        });
+      });
   }
 
 };
@@ -278,6 +298,16 @@ const userModel = {
       user.password = await bcrypt.hash(user.password, 10);
       await userSql.updateUser(id, user);
       return true;
+    } catch (e) {
+      console.log('Update User Error:', e);
+      return false;
+    }
+  },
+
+  updatePayment: async (id, transactionInfo) => {
+    try {
+      transactionInfo.billing_details = JSON.stringify(transactionInfo.billing_details);
+      await userSql.updatePayment(id, transactionInfo);
     } catch (e) {
       console.log('Update User Error:', e);
       return false;

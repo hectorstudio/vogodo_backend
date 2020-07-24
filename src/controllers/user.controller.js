@@ -30,6 +30,23 @@ exports.updateUser = async (req, res) => {
   }
 }
 
+/**
+ * Proceed Payment
+ * @param {*} req 
+ * @param {*} res 
+ */
+exports.proceedPayment = async (req, res) => {
+  const transactionInfo = req.body;
+  console.log(transactionInfo);
+  const result = await User.updatePayment(req.params.id, transactionInfo);
+  console.log(result);
+  if (result) {
+    return true;
+  } else {
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
+  }
+}
+
  /**
   * Add a new User
   */

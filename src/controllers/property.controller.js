@@ -105,7 +105,7 @@ exports.addNewProperty = async (req, res) => {
  * Update Property
  */
 
-const fileUploading = async (thumbs, id, files) => {
+const fileUploading = async (thumbs, id, files, res) => {
   const filePromises = files.map(async (file) => {
     const extension = file.originalname.split('.').reverse()[0];
     const options = {
@@ -120,6 +120,7 @@ const fileUploading = async (thumbs, id, files) => {
       const { mediaLink } = fileResponse[1];
       return thumbs ? {url: mediaLink, order: file.order} : mediaLink;
     } catch (error) {
+      console.log(error);
       return res.status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ error: "Internal Server Error" });
     }
@@ -149,9 +150,9 @@ exports.updateProperty = async (req, res) => {
         })
     })
   );
-  const newResources = await fileUploading(false, req.params.id, files);
+  const newResources = await fileUploading(false, req.params.id, files, res);
   const resources = Property.resources === '' ? newResources : JSON.parse(Property.resources).concat(newResources);
-  const thumbResources = await fileUploading(true, req.params.id, thumbs);
+  const thumbResources = await fileUploading(true, req.params.id, thumbs, res);
   const thumbnails = !Property.thumbnails || Property.thumbnails === '' ? thumbResources : JSON.parse(Property.thumbnails).concat(thumbResources);
   PropertyModel.updateProperty(req.params.id, {...Property, resources: JSON.stringify(resources), thumbnails: JSON.stringify(thumbnails)})
     .then((data) => {

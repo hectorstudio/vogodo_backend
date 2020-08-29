@@ -73,8 +73,8 @@ exports.getPropertiesByOwnerId = async (req, res) => {
     if (Properties.length > 0) {
       Properties.forEach(element => {
         element.details = JSON.parse(element.details);
-        element.resources = JSON.parse(element.resources);
-        element.thumbnails = JSON.parse(element.thumbnails);
+        element.resources = element.resources? JSON.parse(element.resources): [];
+        element.thumbnails = element.thumbnails? JSON.parse(element.thumbnails): [];
       });
     }
     return res.json({ Properties });
